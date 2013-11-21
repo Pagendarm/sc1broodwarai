@@ -3,6 +3,9 @@
 //	Can use FLOAT, STRING, 
 //	INT, BOOL  
 
+#ifndef _BLACKBOARD_H_
+#define _BLACKBOARD_H_
+
 #include "IBehaviorTree.h"
 #include <map>
 #include <string>
@@ -16,8 +19,6 @@ class Blackboard {
 	map<string,void*> map;
 
 	public:
-	Blackboard();
-
 	void insert_data (string k, TYPE t, void* d); 
 
 	DATA get(string key);
@@ -30,3 +31,5 @@ class BlackboardManager : public Decorator {
 	void set_child (Task t);
 	bool run (Blackboard b);
 }
+
+#endif

@@ -3,6 +3,9 @@
 
 // NO actions or conditions in this file
 
+#ifndef _BEHAVIORTREE_H_
+#define _BEHAVIORTREE_H_
+
 #include "IBehaviorTree.h"
 
 class Selector: public Task{
@@ -18,3 +21,5 @@ class Sequence: public Task {
 	bool run(Blackboard b);
 
 }
+
+#endif

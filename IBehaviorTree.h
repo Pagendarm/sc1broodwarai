@@ -4,6 +4,8 @@
 //	implementations of Tasks and Decorators
 //	must implement the run() function
 
+#ifndef _IBEHAVIORTREE_H_
+#define _IBEHAVIORTREE_H_
 
 #include <vector>
 #include "Blackboard.h"
@@ -28,3 +30,4 @@ class Decorator: public Task {
 
 }
 
+#endif
