@@ -5,12 +5,12 @@
 
 #include "BehaviorTree.h"
 
-bool Selector::run() {
+bool Selector::run(Blackboard b) {
 	// CODE GOES HERE
 	return false;
 }	
 
-bool Sequence::run() {
+bool Sequence::run(Blackboard b) {
 	// CODE GOES HERE
 	return false;
 }

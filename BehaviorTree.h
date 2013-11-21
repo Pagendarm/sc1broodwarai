@@ -8,13 +8,13 @@
 class Selector: public Task{
 
 	public:
-	bool run();
+	bool run(Blackboard b);
 
 }
 
 class Sequence: public Task {
 
 	public:
-	bool run();
+	bool run(Blackboard b);
 
 }
