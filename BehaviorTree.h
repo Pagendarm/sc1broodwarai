@@ -22,4 +22,9 @@ class Sequence: public Task {
 
 }
 
+class RandomSelector: public Task {
+	public:
+	bool run(Blackboard b);
+}
+
 #endif
