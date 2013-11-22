@@ -11,16 +11,22 @@
 #include <string>
 
 enum TYPE {FLOAT, STRING, INT, BOOL};
-struct DATA {TYPE type; void* data} 
+struct DATA {TYPE type; void* data;
+	~DATA () {free data;} // Need to free void*
+} 
 
 class Blackboard {
 
 	Blackboard parent;
-	map<string,void*> map;
+	map<string,DATA> map;
 
 	public:
-	void insert_data (string k, TYPE t, void* d); 
-
+	//	Returns true if element inserted
+	//	false otherwise 
+	bool insert_data (string k, TYPE t, void* d); 
+	
+	// Returns a DATA struct with the element with key
+	// if an element with key DNE returns null
 	DATA get(string key);
 
 }
