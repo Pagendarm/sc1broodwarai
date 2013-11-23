@@ -14,19 +14,21 @@ class Selector: public Task{
 
 	public:
 	bool run(Blackboard *b);
-
+	void add_child(Task* child);
 };
 
 class Sequence: public Task {
 
 	public:
 	bool run(Blackboard *b);
+	void add_child(Task* child);
 
 };
 
 class RandomSelector: public Task {
 	public:
 	bool run(Blackboard *b);
+	void add_child(Task* child);
 };
 
 #endif

@@ -15,6 +15,10 @@ bool Selector::run(Blackboard *b) {
 	return false;
 }	
 
+void Selector::add_child (Task* child) {
+	children.push_back(child);
+}
+
 bool Sequence::run(Blackboard *b) {
 	 vector<Task*>::iterator childIter; //create vector iterator for children
     
@@ -23,6 +27,10 @@ bool Sequence::run(Blackboard *b) {
         if (!((*childIter)->run(b))) return false;
     }
 	return true;
+}
+
+void Sequence::add_child (Task* child) {
+	children.push_back(child);
 }
 
 //Non-deterministic
@@ -38,4 +46,8 @@ bool RandomSelector::run(Blackboard *b) {
     }
 	return false;
     
+}
+
+void RandomSelector::add_child (Task* child) {
+	children.push_back(child);
 }
