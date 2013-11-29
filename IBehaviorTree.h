@@ -16,7 +16,7 @@ using namespace std;
 //	Can use FLOAT, STRING, INT, BOOLEAN
 enum TYPE {FLOAT, STRING, INT, BOOLEAN};
 struct DATA {TYPE type; void* data;
-	~DATA () {free(data);} // Need to free void*
+	//COMMENT OUT TO TEST ~DATA () {free(data);} // Need to free void*
 };
 
 // Class to contain a hashtable
