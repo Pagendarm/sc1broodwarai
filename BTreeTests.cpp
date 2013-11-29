@@ -34,14 +34,12 @@ int main () {
 
 	// Initalize a value we want to test for
 	int test_num = 100;
-  int* int_ptr = new int;
-	*int_ptr = test_num; // Dereference pointer and set value to test
 	
 	// Create a string to refer to the number
 	string test_string = "test_string";
 
 	// Insert the pointer and test it was inserted
-	bool inserted = testboard.insert_data (test_string, INT, int_ptr);   
+	bool inserted = testboard.insert_data (test_string, INT, &test_num);   
 	if (inserted) cout << "Data Inserted\n";
   else cout << "Data Insertion FAILED\n";
   

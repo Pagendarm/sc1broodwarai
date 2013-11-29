@@ -6,9 +6,9 @@
 #ifndef _BEHAVIORTREE_H_
 #define _BEHAVIORTREE_H_
 
-using namespace std;
-
 #include "IBehaviorTree.h"
+
+using namespace std;
 
 class Selector: public Task{
 

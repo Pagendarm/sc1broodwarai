@@ -4,12 +4,12 @@
 #ifndef _IBEHAVIORTREE_H_
 #define _IBEHAVIORTREE_H_
 
-using namespace std;
-
 #include <vector>
 #include <map>
 #include <string>
 #include <cstdlib>
+
+using namespace std;
 
 /***** BLACK BOARD DECLARATION ********/
 
