@@ -28,17 +28,26 @@ public:
 */
 
 int main () {
+	cout << "This test should only show TRUE,\n \
+should not fail on an assertion,\n \
+and should never print FAILURE.\n\n";
 
-	Blackboard testboard;
-	testboard.parent = NULL;
-
-	// Initalize a value we want to test for
-	int test_num = 100;
+	// Setup parent
+	Blackboard testboard_parent;
+	float parent_num = 15.0;
+	testboard_parent.parent = NULL;
+	string parent_string = "parent";
+	assert(	testboard_parent.insert_data(parent_string,FLOAT,&parent_num));
 	
-	// Create a string to refer to the number
+	// Setup child
+	Blackboard testboard;
+	testboard.parent = &testboard_parent;
+	int test_num = 100;
 	string test_string = "test_string";
 
 	// Insert the pointer and test it was inserted
+	cout << "Test child:" << endl;
+	
 	bool inserted = testboard.insert_data (test_string, INT, &test_num);   
 	if (inserted) cout << "Data Inserted" << endl;
   else cout << "FAILURE: Data Insertion failed" << endl;
@@ -49,7 +58,6 @@ int main () {
   if (d->type == INT) {
   	cout << "Type enum works" << endl;
    	int num = * ((int*)d->data);
-    cout << "Number is: " <<num << endl;
 		cout << "data == test_num:" ;
 		bool test_data = (num == test_num);
 		if (test_data)
@@ -58,6 +66,21 @@ int main () {
 	
 	}
 	else cout<<"FAILURE: Type was not INT"<< endl;
+
+	// Test parent	
+	cout << "\nTest parent:" << endl;
+	d = testboard.get ("parent");
+  if (d->type == FLOAT) {
+  	cout << "Type enum works" << endl;
+   	float num = * ((float*)d->data);
+		cout << "data == test_num:" ;
+		bool test_data = (num == parent_num);
+		if (test_data)
+		cout << "TRUE" << endl;
+  	else cout <<	"FALSE" << endl; 
+	
+	}
+	else cout<<"FAILURE: Type was not FLOAT"<< endl;
 /*
    Selector sel1;
    Sequence seq1;
