@@ -40,8 +40,8 @@ int main () {
 
 	// Insert the pointer and test it was inserted
 	bool inserted = testboard.insert_data (test_string, INT, &test_num);   
-	if (inserted) cout << "Data Inserted\n";
-  else cout << "Data Insertion FAILED\n";
+	if (inserted) cout << "Data Inserted" << endl;
+  else cout << "FAILURE: Data Insertion failed" << endl;
   
 	// Check data is as expected and type
 	// enum functions well
@@ -49,11 +49,15 @@ int main () {
   if (d->type == INT) {
   	cout << "Type enum works" << endl;
    	int num = * ((int*)d->data);
-    cout << "Number is: " <<num;	
+    cout << "Number is: " <<num << endl;
 		cout << "data == test_num:" ;
 		bool test_data = (num == test_num);
-		cout << test_data << endl;
-   }
+		if (test_data)
+		cout << "TRUE" << endl;
+  	else cout <<	"FALSE" << endl; 
+	
+	}
+	else cout<<"FAILURE: Type was not INT"<< endl;
 /*
    Selector sel1;
    Sequence seq1;

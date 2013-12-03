@@ -5,12 +5,12 @@
 
 bool Blackboard::insert_data (string k, TYPE t, void* d) {
   // Create new DATA
-  DATA new_data;
-	new_data.type = t;
-	new_data.data = d;
+  DATA* new_data = new DATA;
+	new_data->type = t;
+	new_data->data = d;
 	size_t current = table.size();
   // Add to table
-	table[k] = &new_data;
+	table[k] = new_data;
   // Check if successful (size increased)
 	if (table.size() <= current) return false;
 	return true;

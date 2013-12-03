@@ -12,4 +12,7 @@
 *.la
 *.a
 
+# Common Compiled File Extensions
+*.out
+
 *.DS_Store
