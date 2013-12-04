@@ -7,12 +7,27 @@
 #include <stdio.h>
 #include <assert.h>
 
-/*
+
 class DoorOpen : public Task
 {
 public:
    bool run (Blackboard *b);
 };
+
+bool DoorOpen::run (Blackboard *b)
+{
+   vector<Task*>::iterator childIter;
+   DATA *d = b->get ("door_status");
+   
+   bool tf = *(bool*) d->data;
+   
+   printf ("DoorOpen? Task\n");
+   cout << tf;
+   printf ("\n");
+
+   if (tf) return true;
+   return false;
+}
 
 class Move : public Task
 {
@@ -20,12 +35,29 @@ public:
    bool run (Blackboard *b);
 };
 
+bool Move::run (Blackboard *b)
+{
+   vector<Task*>::iterator childIter;
+
+   printf ("Move Task\n");
+   return true;
+}
+
 class OpenDoor : public Task
 {
 public:
    bool run (Blackboard *b);
 };
-*/
+
+bool OpenDoor::run (Blackboard *b)
+{
+   vector<Task*>::iterator childIter;
+
+   printf ("OpenDoor Task\n");
+   return true;
+}
+
+
 
 int main () {
 	cout << "This test should only show TRUE,\n \
@@ -81,20 +113,35 @@ and should never print FAILURE.\n\n";
 	
 	}
 	else cout<<"FAILURE: Type was not FLOAT"<< endl;
-/*
+
+   printf ("\nBuild Tree and Test\n");
+   // Declare Task nodes to be used to build BTree
    Selector sel1;
-   Sequence seq1;
+   Sequence root;
    Sequence seq2;
-   DoorOpen doorOpen;
-   Move move;
+   DoorOpen isOpen;
+   Move moveToDoor;
    OpenDoor openDoor;
 
-   seq1.add_child (&sel1);
-   sel1.add_child (doorOpen);
+   // Insert some data into the Blackboard
+   // that the BTree will use
+   Blackboard treeBoard;
+   treeBoard.parent = NULL;
+   bool open = false;
+   cout << open;
+   printf("\n");
+   assert (treeBoard.insert_data ("door_status", BOOLEAN, &open));
+
+   // Build BTree using the Task nodes
+   root.add_child (&sel1);
+   sel1.add_child (&isOpen);
    sel1.add_child (&seq2);
-   seq2.add_child (move);
-   seq2.add_child (openDoor);
- */  
+   seq2.add_child (&moveToDoor);
+   seq2.add_child (&openDoor);
+   
+   // Run BTree with Blackboard
+   if (root.run (&treeBoard)) printf ("RunTrue\n");
+   else printf ("RunFalse\n");
 
    return 0;
 

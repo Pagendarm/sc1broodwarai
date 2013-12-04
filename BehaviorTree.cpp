@@ -10,7 +10,7 @@ bool Selector::run(Blackboard *b) {
     
     //iterate through each, returning true if any child runs successfully
     for (childIter = children.begin(); childIter != children.end(); childIter++) {
-        if (!((*childIter)->run(b))) return true;
+        if (((*childIter)->run(b))) return true;
     }
 	return false;
 }	
