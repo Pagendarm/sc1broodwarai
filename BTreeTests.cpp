@@ -7,55 +7,40 @@
 #include <stdio.h>
 #include <assert.h>
 
+int N = 0;
+int pass = 0;
 
 class DoorOpen : public Task
 {
 public:
-   bool run (Blackboard *b);
+   bool run (Blackboard *b) {
+		 vector<Task*>::iterator childIter;
+		 DATA *d = b->get ("door_status");
+		 
+		 bool tf = *(bool*) d->data;
+		 ::N++;
+		 if (tf) return true;
+		 return false;
+	}
 };
-
-bool DoorOpen::run (Blackboard *b)
-{
-   vector<Task*>::iterator childIter;
-   DATA *d = b->get ("door_status");
-   
-   bool tf = *(bool*) d->data;
-   
-   printf ("DoorOpen? Task\n");
-   cout << tf;
-   printf ("\n");
-
-   if (tf) return true;
-   return false;
-}
 
 class Move : public Task
 {
 public:
-   bool run (Blackboard *b);
+   bool run (Blackboard *b) {
+	 	::N++;
+		 return true;
+	}
 };
-
-bool Move::run (Blackboard *b)
-{
-   vector<Task*>::iterator childIter;
-
-   printf ("Move Task\n");
-   return true;
-}
 
 class OpenDoor : public Task
 {
 public:
-   bool run (Blackboard *b);
+   bool run (Blackboard *b) {
+		 ::N++;
+		 return true;
+	}
 };
-
-bool OpenDoor::run (Blackboard *b)
-{
-   vector<Task*>::iterator childIter;
-
-   printf ("OpenDoor Task\n");
-   return true;
-}
 
 
 
@@ -81,7 +66,10 @@ and should never print FAILURE.\n\n";
 	cout << "Test child:" << endl;
 	
 	bool inserted = testboard.insert_data (test_string, INT, &test_num);   
-	if (inserted) cout << "Data Inserted" << endl;
+	if (inserted) {
+		cout << "Data Inserted" << endl;
+		::pass++;
+	}
   else cout << "FAILURE: Data Insertion failed" << endl;
   
 	// Check data is as expected and type
@@ -89,11 +77,14 @@ and should never print FAILURE.\n\n";
 	DATA *d = testboard.get (test_string);
   if (d->type == INT) {
   	cout << "Type enum works" << endl;
+		::pass++;
    	int num = * ((int*)d->data);
 		cout << "data == test_num:" ;
 		bool test_data = (num == test_num);
-		if (test_data)
+		if (test_data) {
 		cout << "TRUE" << endl;
+		::pass++;
+		}
   	else cout <<	"FALSE" << endl; 
 	
 	}
@@ -107,8 +98,10 @@ and should never print FAILURE.\n\n";
    	float num = * ((float*)d->data);
 		cout << "data == test_num:" ;
 		bool test_data = (num == parent_num);
-		if (test_data)
+		if (test_data) {
 		cout << "TRUE" << endl;
+		::pass++;
+		}
   	else cout <<	"FALSE" << endl; 
 	
 	}
@@ -127,9 +120,7 @@ and should never print FAILURE.\n\n";
    // that the BTree will use
    Blackboard treeBoard;
    treeBoard.parent = NULL;
-   bool open = false;
-   cout << open;
-   printf("\n");
+   bool open = true;
    assert (treeBoard.insert_data ("door_status", BOOLEAN, &open));
 
    // Build BTree using the Task nodes
@@ -140,9 +131,24 @@ and should never print FAILURE.\n\n";
    seq2.add_child (&openDoor);
    
    // Run BTree with Blackboard
-   if (root.run (&treeBoard)) printf ("RunTrue\n");
-   else printf ("RunFalse\n");
+	 // Using N to determine if BT visits correct number
+   // of nodes depending on Blackboard
+   cout<< "If open== true, N = 1,  else if open == false,  N=3"<<endl;
+   root.run (&treeBoard);
 
-   return 0;
+	 ::pass++;
+	 if (open==true && ::N == 1) cout << "success!"<<endl;
+	 else if (open == false && ::N ==3) cout<< "success!"<<endl;
+	 else {
+		 cout << "FAILURE with BT using Blackboard"<<endl;
+		 ::pass--;
+	 }
+ 
+   // Use pass variable to determine if all tests
+	 // were successful
+		cout << endl;
+		if (::pass == 5) cout << "ALL TESTS PASSED!"<<endl;
+		else cout << "__TEST FAILED: CHECK OUTPUT__" <<endl;
 
+	 return 0;
 }
