@@ -14,7 +14,7 @@ using namespace std;
 /***** BLACK BOARD DECLARATION ********/
 
 //	Can use FLOAT, STRING, INT, BOOLEAN
-enum TYPE {FLOAT, STRING, INT, BOOLEAN};
+enum TYPE {FLOAT, STRING, INT, BOOLEAN, UNITSET, UNIT, TREE};
 struct DATA {TYPE type; void* data;};
 
 // Class to contain a hashtable

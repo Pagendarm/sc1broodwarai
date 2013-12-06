@@ -1,13 +1,32 @@
-#include "AIModule.h"
-#include <iostream>
+#include <BWAPI.h>
+#include <math.h>
+#include <vector>
+
+#include "ExampleAIModule.h"
+#include "BehaviorTree.h"
+#include "BWTasks.h"
 
 using namespace BWAPI;
 using namespace Filter;
+using namespace std;
+
+Blackboard parent;
+vector<Blackboard> blackboard;
+Unitset myUnits;
+
+int pixelWidth;
+int pixelHeight;
+Position avgPos;
+
+bool finishedSpread = false;
+
+
+
 
 void ExampleAIModule::onStart()
 {
   // Hello World!
-  Broodwar->sendText("Hello world!");
+  Broodwar->sendText("My life for Aiur!");
 
   // Print the map name.
   // BWAPI returns std::string when retrieving a string, don't forget to add .c_str() when printing!
@@ -17,13 +36,85 @@ void ExampleAIModule::onStart()
   Broodwar->enableFlag(Flag::UserInput);
 
   // Uncomment the following line and the bot will know about everything through the fog of war (cheat).
-  //Broodwar->enableFlag(Flag::CompleteMapInformation);
+  Broodwar->enableFlag(Flag::CompleteMapInformation);
 
   // Set the command optimization level so that common commands can be grouped
   // and reduce the bot's APM (Actions Per Minute).
   Broodwar->setCommandOptimizationLevel(2);
   
-  // Any additional starter code here!!!
+  // Retrieve you and your enemy's races. enemy() will just return the first enemy.
+  // If you wish to deal with multiple enemies then you must use enemies().
+  if ( Broodwar->enemy() ) // First make sure there is an enemy
+    Broodwar << "The matchup is " << Broodwar->self()->getRace() << " vs " << Broodwar->enemy()->getRace() << std::endl;
+
+
+  myUnits = Broodwar->self()->getUnits();
+  Unitset enemyUnits = Broodwar->enemy()->getUnits();
+  avgPos = myUnits.getPosition();
+
+  // Setting up parent blackboard
+  parent.insert_data(ENEMYSET, UNITSET, enemyUnits);
+  parent.insert_data(AVGP, INT, &avgPos);
+  parent.parent = NULL;
+
+  // Setting up vector<Blackboard>
+  for ( Unitset::iterator u = myUnits.begin(); u != myUnits.end(); ++u )
+  {
+	  Blackboard b;
+
+	  // link global blackboard as parent
+	  b.parent = &parent;
+
+	  // create action and condition tasks
+	  TaskMoveOnLine mol;
+	  TaskAttackMoveAction ama;
+	  TaskFallBackAction fba;
+	  TaskLowSheildsCondition lsc;
+	  TaskOnLineConidition olc;
+	  TaskTakingDamageCondition tdc;
+
+	  // create sub trees
+	  Sequence left;
+	  left.add_child(&olc);
+	  left.add_child(&mol);
+
+	  Sequence center;
+	  center.add_child(&lsc);
+	  center.add_child(&tdc);
+	  center.add_child(&fba);
+
+	  // connect to root
+	  Selector root;
+	  root.add_child(&left);
+	  root.add_child(&center);
+	  root.add_child(&ama);
+
+	  // add unit to blackboard
+	  b.insert_data(FUNIT, UNIT, *u);
+
+	  // add tree to blackboard
+	  b.insert_data(BTREE, TREE, &root);
+
+	  // add b to blackboard vector
+	  blackboard.push_back(b);
+  }
+
+
+
+  pixelHeight = Broodwar->mapHeight() * 32;
+  pixelWidth = Broodwar->mapWidth() * 32;
+  avgPos = myUnits.getPosition();
+
+  Position p1(avgPos.x, avgPos.y);
+  p1.y -= CONCAVE_LENGTH;
+  Position p2(avgPos.x, avgPos.y);
+  p2.y += CONCAVE_LENGTH;
+
+  Broodwar->sendText("avgPos.x: %d", avgPos.x);
+  Broodwar->sendText("avgPos.y: %d", avgPos.y);
+  Broodwar->sendText("desiredLine: (%d, %d) (%d, %d)", p1.x, p1.y, p2.x, p2.y);
+  Broodwar->sendText("height: %d", pixelHeight);
+  Broodwar->sendText("width: %d", pixelWidth);
 
 }
 
@@ -39,6 +130,7 @@ void ExampleAIModule::onEnd(bool isWinner)
 void ExampleAIModule::onFrame()
 {
   // Called once every game frame
+  drawStats();
 
   // Display the game frame rate as text in the upper left area of the screen
   Broodwar->drawTextScreen(200, 0,  "FPS: %d", Broodwar->getFPS() );
@@ -53,33 +145,18 @@ void ExampleAIModule::onFrame()
   if ( Broodwar->getFrameCount() % Broodwar->getLatencyFrames() != 0 )
     return;
 
-  // Iterate through all the units that we own
-  Unitset myUnits = Broodwar->self()->getUnits();
-  for ( Unitset::iterator u = myUnits.begin(); u != myUnits.end(); ++u )
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  // loop through all the black board to decide what
+  // each unit should do
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  vector<Blackboard>::iterator b;
+  for (b = blackboard.begin(); b != blackboard.end(); b++)
   {
-    // Ignore the unit if it no longer exists
-    // Make sure to include this block when handling any Unit pointer!
-    if ( !u->exists() )
-      continue;
+	  DATA *data = b->get(BTREE);
+	  Task* behaviorTree = (Task*) data->data;
+	  behaviorTree->run(&(*b));
+  }
 
-    // Ignore the unit if it has one of the following status ailments
-    if ( u->isLockedDown() || u->isMaelstrommed() || u->isStasised() )
-      continue;
-
-    // Ignore the unit if it is in one of the following states
-    if ( u->isLoaded() || !u->isPowered() || u->isStuck() )
-      continue;
-
-    // Ignore the unit if it is incomplete or busy constructing
-    if ( !u->isCompleted() || u->isConstructing() )
-      continue;
-
-
-    // ~~~Behavior tree Logic here!!!
-
-
-
-  } // closure: unit iterator
 }
 
 void ExampleAIModule::onSendText(std::string text)
@@ -113,8 +190,6 @@ void ExampleAIModule::onNukeDetect(BWAPI::Position target)
 
 void ExampleAIModule::onUnitDiscover(BWAPI::Unit unit)
 {
-	// Called when a unit is seen
-	// Probably won't need logic here if everything runs in onFrame()
 }
 
 void ExampleAIModule::onUnitEvade(BWAPI::Unit unit)
@@ -123,7 +198,6 @@ void ExampleAIModule::onUnitEvade(BWAPI::Unit unit)
 
 void ExampleAIModule::onUnitShow(BWAPI::Unit unit)
 {
-	// Called when a previously seen unit is seen again
 }
 
 void ExampleAIModule::onUnitHide(BWAPI::Unit unit)
@@ -132,21 +206,19 @@ void ExampleAIModule::onUnitHide(BWAPI::Unit unit)
 
 void ExampleAIModule::onUnitCreate(BWAPI::Unit unit)
 {
-  //if ( Broodwar->isReplay() )
-  //{
-  //  // if we are in a replay, then we will print out the build order of the structures
-  //  if ( unit->getType().isBuilding() && !unit->getPlayer()->isNeutral() )
-  //  {
-  //    int seconds = Broodwar->getFrameCount()/24;
-  //    int minutes = seconds/60;
-  //    seconds %= 60;
-  //    Broodwar->sendText("%.2d:%.2d: %s creates a %s", minutes, seconds, unit->getPlayer()->getName().c_str(), unit->getType().c_str());
-  //  }
-  //}
 }
 
 void ExampleAIModule::onUnitDestroy(BWAPI::Unit unit)
 {
+	int ecount = Broodwar->enemy()->allUnitCount(UnitTypes::Protoss_Dragoon);
+	if (ecount <= 0)
+	{
+		int count = Broodwar->self()->allUnitCount(UnitTypes::Protoss_Dragoon);
+		if (count > ecount)
+		{
+			Broodwar->sendText("nooblord");
+		}
+	}
 }
 
 void ExampleAIModule::onUnitMorph(BWAPI::Unit unit)
@@ -164,4 +236,25 @@ void ExampleAIModule::onSaveGame(std::string gameName)
 
 void ExampleAIModule::onUnitComplete(BWAPI::Unit unit)
 {
+}
+
+void ExampleAIModule::drawStats()
+{
+  int line = 1;
+  Broodwar->drawTextScreen(5, 0, "Began with 12 units");
+  for ( UnitType::set::iterator i = UnitTypes::allUnitTypes().begin(); i != UnitTypes::allUnitTypes().end(); ++i )
+  {
+    int count = Broodwar->self()->allUnitCount(*i);
+	int ecount = Broodwar->enemy()->allUnitCount(*i);
+    if ( count )
+    {
+      Broodwar->drawTextScreen(5, 16*line, "- %d friendly %s%c", count, (*i).c_str(), count == 1 ? ' ' : 's');
+      ++line;
+    }
+	if ( ecount )
+	{
+	  Broodwar->drawTextScreen(5, 16*line, "- %d enemy %s%c", ecount, (*i).c_str(), count == 1 ? ' ' : 's');
+	  ++line;
+	}
+  }
 }
